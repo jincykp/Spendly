@@ -37,7 +37,7 @@ class BudgetLocalDataSource {
   }
 
   Future<void> saveBudget(BudgetModel budget) async {
-
+  await MockDataSeeder.markBudgetsAsReal(); 
     await _box.put(_keyFor(budget), budget);
   }
 

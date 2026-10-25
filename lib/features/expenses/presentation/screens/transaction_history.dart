@@ -129,7 +129,26 @@ class _TransactionHistoryScreenState
 
     // The screen refreshes automatically when the provider changes.
   }
-
+void _showSnack(String message, {bool isError = false}) {
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(fontWeight: FontWeight.w500),
+        ),
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+        backgroundColor: isError ? AppColors.budgetOverBudget : null,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+}
   Future<void> _deleteTransaction(Expense expense) async {
     await ref
         .read(expensesProvider.notifier)
@@ -137,11 +156,7 @@ class _TransactionHistoryScreenState
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Transaction deleted'),
-      ),
-    );
+   _showSnack('Transaction deleted');
   }
 
   Future<void> _selectDateRange() async {

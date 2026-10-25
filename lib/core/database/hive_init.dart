@@ -27,10 +27,11 @@ class HiveInit {
     await Hive.openBox<BudgetModel>(
       BudgetLocalDataSource.boxName,
     );
-await Hive.openBox(MockDataSeeder.settingsBoxName); // add this
+await Hive.openBox(MockDataSeeder.settingsBoxName); 
     // Add default budgets if missing
     await BudgetLocalDataSource().seedDefaultBudgets();
 await MockDataSeeder.seedData();
+await MockDataSeeder.seedBudgets(); 
     debugPrint('Hive initialized successfully.');
     debugPrint(
       'Budgets loaded: '

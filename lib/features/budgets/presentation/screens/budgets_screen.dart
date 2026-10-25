@@ -38,7 +38,26 @@ class _BudgetsScreenState extends ConsumerState<BudgetsScreen> {
           (total, expense) => total + expense.amount,
         );
   }
-
+void _showSnack(String message, {bool isError = false}) {
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(fontWeight: FontWeight.w500),
+        ),
+        behavior: SnackBarBehavior.floating, // detaches it from the screen edges
+        margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h), // outer padding
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h), // inner padding
+        backgroundColor: isError ? AppColors.budgetOverBudget : null,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+}
   Future<void> editBudget({
     required String title,
     required double currentLimit,
@@ -68,11 +87,7 @@ class _BudgetsScreenState extends ConsumerState<BudgetsScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Budget saved successfully'),
-        ),
-      );
+      _showSnack('Budget saved successfully');
     } catch (error, stackTrace) {
       debugPrint('BUDGET SAVE ERROR: $error');
       debugPrint('STACK TRACE: $stackTrace');
@@ -83,9 +98,8 @@ class _BudgetsScreenState extends ConsumerState<BudgetsScreen> {
           ? error.toString().replaceFirst('Bad state: ', '')
           : 'Unable to save the budget. Please try again.';
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+     
+      _showSnack(message, isError: true);
     }
   }
   @override

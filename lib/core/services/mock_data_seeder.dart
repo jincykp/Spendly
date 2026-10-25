@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:spendly/features/budgets/data/data_sources/budget_data_source.dart';
 import 'package:spendly/features/budgets/data/models/budget_model.dart';
@@ -6,8 +7,15 @@ import 'package:spendly/features/expenses/data/models/expense_model.dart';
 class MockDataSeeder {
   static const settingsBoxName = 'app_settings';
   static const _seededKey = 'mock_data_seeded';
+  static const _budgetsSeededKey = 'mock_budgets_seeded';
+  static const _budgetsActiveKey = 'mock_budgets_active';
   static const mockPrefix = 'mock_';
+
   static bool isMockId(String id) => id.startsWith(mockPrefix);
+
+  // ---------------------------------------------------------------------------
+  // Expenses
+  // ---------------------------------------------------------------------------
 
   static Future<void> seedData() async {
     final settings = Hive.box(settingsBoxName);
@@ -82,4 +90,82 @@ class MockDataSeeder {
         .toList();
     await box.deleteAll(mockKeys);
   }
+
+  // ---------------------------------------------------------------------------
+  // Budgets
+  // ---------------------------------------------------------------------------
+
+  static bool get isMockBudgetsActive => Hive.box(settingsBoxName)
+      .get(_budgetsActiveKey, defaultValue: false) as bool;
+
+  /// Seeds mock budgets once, only if the user has no real data.
+  static Future<void> seedBudgets() async {
+    final settings = Hive.box(settingsBoxName);
+    if (settings.get(_budgetsSeededKey, defaultValue: false) as bool) {
+      debugPrint('Budget seed skipped: already seeded before');
+      return;
+    }
+
+    final budgetBox = Hive.box<BudgetModel>(BudgetLocalDataSource.boxName);
+    final expenseBox = Hive.box<ExpenseModel>('expenses');
+
+    final hasRealExpenses = expenseBox.values.any((e) => !isMockId(e.id));
+    final hasUserBudget =
+        budgetBox.values.any((b) => b.isMonthly || b.limit > 0);
+
+    // Never try again, whatever happens next.
+    await settings.put(_budgetsSeededKey, true);
+
+    if (hasRealExpenses || hasUserBudget) {
+      debugPrint('Budget seed skipped: realExpenses=$hasRealExpenses, '
+          'userBudget=$hasUserBudget');
+      return;
+    }
+
+    await budgetBox.put(
+      'monthly', // same key BudgetLocalDataSource uses for the monthly budget
+      const BudgetModel(
+        category: 'Monthly Budget',
+        limit: 25000,
+        isMonthly: true,
+      ),
+    );
+
+    const categoryLimits = <String, double>{
+      'Food': 6000,
+      'Transport': 2500,
+      'Entertainment': 1500,
+      'Bills': 4500,
+      'Shopping': 5000, // mock spending is 5599, so this shows "over budget"
+      'Health': 1500,
+      'Education': 2000,
+      'Other': 1000,
+    }; // total 24000, leaving 1000 unallocated
+
+    for (final entry in categoryLimits.entries) {
+      await budgetBox.put(
+        entry.key,
+        BudgetModel(category: entry.key, limit: entry.value),
+      );
+    }
+
+    await settings.put(_budgetsActiveKey, true);
+    debugPrint('Mock budgets seeded');
+  }
+
+  /// Resets budgets to the empty defaults, only if they are still mock.
+  static Future<void> clearMockBudgets() async {
+    if (!isMockBudgetsActive) return;
+
+    final box = Hive.box<BudgetModel>(BudgetLocalDataSource.boxName);
+    await box.delete('monthly');
+    for (final budget in BudgetLocalDataSource.defaultBudgets) {
+      await box.put(budget.category, budget);
+    }
+    await Hive.box(settingsBoxName).put(_budgetsActiveKey, false);
+  }
+
+  /// The user edited a budget themselves, so it is no longer mock.
+  static Future<void> markBudgetsAsReal() =>
+      Hive.box(settingsBoxName).put(_budgetsActiveKey, false);
 }
