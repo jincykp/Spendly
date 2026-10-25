@@ -358,136 +358,140 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTrendChart({
-    required Color surfaceColor,
-    required Color secondaryText,
-    required Color primary,
-    required Map<int, double> dailyTotals,
-  }) {
-    final now = DateTime.now();
-    final daysInMonth = DateUtils.getDaysInMonth(
-      now.year,
-      now.month,
-    );
+ Widget _buildTrendChart({
+  required Color surfaceColor,
+  required Color secondaryText,
+  required Color primary,
+  required Map<int, double> dailyTotals,
+}) {
+  final now = DateTime.now();
+  final daysInMonth = DateUtils.getDaysInMonth(now.year, now.month);
+  final today = now.day;
 
-    final spots = dailyTotals.entries
-        .map(
-          (entry) => FlSpot(
-            entry.key.toDouble(),
-            entry.value,
-          ),
-        )
-        .toList()
-      ..sort((a, b) => a.x.compareTo(b.x));
+  // One point per day so the line always draws
+  final spots = <FlSpot>[
+    for (var day = 1; day <= today; day++)
+      FlSpot(day.toDouble(), dailyTotals[day] ?? 0),
+  ];
 
-    final maxSpending = dailyTotals.values.fold<double>(
-      0,
-      (maximum, amount) =>
-          amount > maximum ? amount : maximum,
-    );
+  final hasData = dailyTotals.values.any((amount) => amount > 0);
 
-    final maxY = maxSpending == 0
-        ? 1000.0
-        : (maxSpending * 1.2 / 1000).ceil() * 1000.0;
+  final maxSpending = dailyTotals.values.fold<double>(
+    0,
+    (maximum, amount) => amount > maximum ? amount : maximum,
+  );
 
-    return Container(
-      height: 240.h,
-      padding: EdgeInsets.fromLTRB(12.w, 20.h, 20.w, 12.h),
-      decoration: BoxDecoration(
-        color: surfaceColor,
-        borderRadius: BorderRadius.circular(18.r),
-      ),
-      child: spots.isEmpty
-          ? Center(
-              child: Text(
-                'No spending data for this month yet.',
-                style: TextStyle(color: secondaryText),
-                textAlign: TextAlign.center,
-              ),
-            )
-          : LineChart(
-              LineChartData(
-                minX: 1,
-                maxX: daysInMonth.toDouble(),
-                minY: 0,
-                maxY: maxY,
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: false,
-                  getDrawingHorizontalLine: (_) => FlLine(
-                    color: secondaryText.withValues(alpha: 0.15),
-                    strokeWidth: 1,
-                  ),
-                ),
-                borderData: FlBorderData(show: false),
-                titlesData: FlTitlesData(
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 42.w,
-                      interval: maxY / 4,
-                      getTitlesWidget: (value, meta) => Text(
-                        value == 0
-                            ? '₹0'
-                            : '₹${(value / 1000).round()}k',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: secondaryText,
-                        ),
-                      ),
-                    ),
-                  ),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      interval: 1,
-                      getTitlesWidget: (value, meta) {
-                        final day = value.toInt();
+  final maxY = maxSpending == 0
+      ? 1000.0
+      : (maxSpending * 1.2 / 1000).ceil() * 1000.0;
 
-                        if (day < 1 ||
-                            day > daysInMonth ||
-                            (day != 1 && day % 5 != 0)) {
-                          return const SizedBox.shrink();
-                        }
-
-                        return Padding(
-                          padding: EdgeInsets.only(top: 8.h),
-                          child: Text(
-                            '$day',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: secondaryText,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: spots,
-                    isCurved: true,
-                    barWidth: 3,
-                    color: primary,
-                    dotData: const FlDotData(show: false),
-                    belowBarData: BarAreaData(
-                      show: true,
-                      color: primary.withValues(alpha: 0.12),
-                    ),
-                  ),
-                ],
-              ),
+  return Container(
+    height: 240.h,
+    padding: EdgeInsets.fromLTRB(12.w, 20.h, 20.w, 12.h),
+    decoration: BoxDecoration(
+      color: surfaceColor,
+      borderRadius: BorderRadius.circular(18.r),
+    ),
+    child: !hasData
+        ? Center(
+            child: Text(
+              'No spending data for this month yet.',
+              style: TextStyle(color: secondaryText),
+              textAlign: TextAlign.center,
             ),
-    );
-  }
+          )
+        : LineChart(
+            LineChartData(
+              minX: 1,
+              maxX: daysInMonth.toDouble(),
+              minY: 0,
+              maxY: maxY,
+              gridData: FlGridData(
+                show: true,
+                drawVerticalLine: false,
+                getDrawingHorizontalLine: (_) => FlLine(
+                  color: secondaryText.withValues(alpha: 0.15),
+                  strokeWidth: 1,
+                ),
+              ),
+              borderData: FlBorderData(show: false),
+              titlesData: FlTitlesData(
+                topTitles: const AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                rightTitles: const AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 42.w,
+                    interval: maxY / 4,
+                    getTitlesWidget: (value, meta) => Text(
+                      value == 0
+                          ? '₹0'
+                          : value >= 1000
+                              ? '₹${(value / 1000).toStringAsFixed(value % 1000 == 0 ? 0 : 1)}k'
+                              : '₹${value.round()}',
+                      style: TextStyle(fontSize: 10, color: secondaryText),
+                    ),
+                  ),
+                ),
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    interval: 1,
+                    getTitlesWidget: (value, meta) {
+                      final day = value.toInt();
 
+                      if (day < 1 ||
+                          day > daysInMonth ||
+                          (day != 1 && day % 5 != 0)) {
+                        return const SizedBox.shrink();
+                      }
+
+                      return Padding(
+                        padding: EdgeInsets.only(top: 8.h),
+                        child: Text(
+                          '$day',
+                          style: TextStyle(fontSize: 10, color: secondaryText),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+              lineBarsData: [
+                LineChartBarData(
+                  spots: spots,
+                  isCurved: true,
+                  preventCurveOverShooting: true,
+                  barWidth: 3,
+                  color: primary,
+                  dotData: FlDotData(
+                    show: true,
+                    checkToShowDot: (spot, barData) => spot.y > 0,
+                    getDotPainter: (spot, percent, bar, index) =>
+                        FlDotCirclePainter(
+                      radius: 3.5,
+                      color: primary,
+                      strokeWidth: 0,
+                    ),
+                  ),
+                  belowBarData: BarAreaData(
+                    show: true,
+                    color: primary.withValues(alpha: 0.12),
+                  ),
+                ),
+              ],
+            ),
+          ),
+  );
+}Color _labelColorFor(Color background) {
+  return ThemeData.estimateBrightnessForColor(background) == Brightness.dark
+      ? Colors.white
+      : Colors.black87;
+}
   Widget _buildCategoryBreakdown({
     required Color surfaceColor,
     required Color textColor,
@@ -528,35 +532,46 @@ class DashboardScreen extends ConsumerWidget {
               children: [
                 SizedBox(
                   height: 190.h,
-                  child: PieChart(
-                    PieChartData(
-                      sectionsSpace: 3,
-                      centerSpaceRadius: 42.r,
-                      sections: categories.map((entry) {
-                        final color = categoryColors[entry.key] ??
-                            AppColors.lightPrimary;
+                 child: PieChart(
+  PieChartData(
+    sectionsSpace: 3,
+    centerSpaceRadius: 36.r, // was 42.r
+    sections: categories.map((entry) {
+  final color = categoryColors[entry.key] ?? AppColors.lightPrimary;
+  final percentage = entry.value / monthlyExpenses * 100;
 
-                        final percentage = entry.value / monthlyExpenses * 100;
+  // Slices below 8% are too narrow for text inside
+  final isSmall = percentage < 8;
+  final label = percentage < 1 ? '<1%' : '${percentage.round()}%';
 
-                        return PieChartSectionData(
-                          value: entry.value,
-                          color: color,
-                          radius: 28.r,
-                          title: '${percentage.round()}%',
-                          titleStyle: TextStyle(
-                            color: AppColors.budgetCardText,
-                            fontSize: percentage < 5
-                                ? 7.sp
-                                : percentage < 10
-                                    ? 9.sp
-                                    : 11.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          titlePositionPercentageOffset: 0.55,
-                        );
-                      }).toList(),
-                    ),
-                  ),
+  return PieChartSectionData(
+    value: entry.value,
+    color: color,
+    radius: 40.r,
+    // Big slice: label inside. Small slice: no inside label.
+    title: isSmall ? '' : label,
+    titleStyle: TextStyle(
+      color: _labelColorFor(color),
+      fontSize: 12.sp,
+      fontWeight: FontWeight.bold,
+    ),
+    titlePositionPercentageOffset: 0.55,
+    // Small slice: label sits outside the ring
+    badgeWidget: isSmall
+        ? Text(
+            label,
+            style: TextStyle(
+              color: textColor,
+              fontSize: 10.sp,
+              fontWeight: FontWeight.bold,
+            ),
+          )
+        : null,
+    badgePositionPercentageOffset: 1.4, // above 1 = outside the slice
+  );
+}).toList(),
+  ),
+),
                 ),
                 SizedBox(height: 12.h),
                 ...categories.map((entry) {
