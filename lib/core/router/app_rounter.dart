@@ -4,8 +4,8 @@ import 'package:spendly/features/budgets/presentation/screens/budgets_screen.dar
 import 'package:spendly/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:spendly/features/expenses/domain/entities/expense.dart';
 import 'package:spendly/features/expenses/presentation/screens/add_edit_expense.dart';
-import 'package:spendly/features/expenses/presentation/screens/splash_screen.dart';
 import 'package:spendly/features/expenses/presentation/screens/transaction_history.dart';
+import 'package:spendly/features/splash/presentation/screens/splash_screeen.dart';
 
 class AppRoutes {
   static const splash = '/';

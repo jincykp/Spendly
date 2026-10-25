@@ -1,4 +1,3 @@
-
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -106,7 +105,7 @@ class DashboardScreen extends ConsumerWidget {
                       title: 'Total Spent',
                       amount: monthlyExpenses,
                       icon: Icons.trending_up_rounded,
-                      iconColor: const Color(0xFFE57373),
+                      iconColor: AppColors.expenseSpentIcon,
                       surfaceColor: surfaceColor,
                       textColor: textColor,
                       secondaryText: secondaryText,
@@ -120,7 +119,7 @@ class DashboardScreen extends ConsumerWidget {
                       icon: Icons.account_balance_wallet_rounded,
                       iconColor: remainingBudget < 0
                           ? AppColors.budgetOverBudget
-                          : const Color(0xFF4CAF50),
+                          : AppColors.budgetRemainingPositive,
                       surfaceColor: surfaceColor,
                       textColor: textColor,
                       secondaryText: secondaryText,
@@ -499,14 +498,14 @@ class DashboardScreen extends ConsumerWidget {
       ..sort((a, b) => b.value.compareTo(a.value));
 
     const categoryColors = <String, Color>{
-      'Food': Color(0xFF4CAF50),
-      'Transport': Color(0xFF2196F3),
-      'Entertainment': Color(0xFFE57373),
-      'Bills': Color(0xFFFFA726),
-      'Shopping': Color(0xFF9575CD),
-      'Health': Color(0xFF26A69A),
-      'Education': Color(0xFF7986CB),
-      'Other': Color(0xFF90A4AE),
+      'Food': AppColors.categoryFood,
+      'Transport': AppColors.categoryTransport,
+      'Entertainment': AppColors.categoryEntertainment,
+      'Bills': AppColors.categoryBills,
+      'Shopping': AppColors.categoryShopping,
+      'Health': AppColors.categoryHealth,
+      'Education': AppColors.categoryEducation,
+      'Other': AppColors.categoryOther,
     };
 
     return Container(
@@ -537,26 +536,24 @@ class DashboardScreen extends ConsumerWidget {
                         final color = categoryColors[entry.key] ??
                             AppColors.lightPrimary;
 
-                      
-final percentage = entry.value / monthlyExpenses * 100;
+                        final percentage = entry.value / monthlyExpenses * 100;
 
-return PieChartSectionData(
-  value: entry.value,
-  color: color,
-  radius: 28.r,
-  title: '${percentage.round()}%',
-  titleStyle: TextStyle(
-    color: AppColors.budgetCardText,
-    fontSize: percentage < 5
-        ? 7.sp
-        : percentage < 10
-            ? 9.sp
-            : 11.sp,
-    fontWeight: FontWeight.bold,
-  ),
-  titlePositionPercentageOffset: 0.55,
-);
-
+                        return PieChartSectionData(
+                          value: entry.value,
+                          color: color,
+                          radius: 28.r,
+                          title: '${percentage.round()}%',
+                          titleStyle: TextStyle(
+                            color: AppColors.budgetCardText,
+                            fontSize: percentage < 5
+                                ? 7.sp
+                                : percentage < 10
+                                    ? 9.sp
+                                    : 11.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          titlePositionPercentageOffset: 0.55,
+                        );
                       }).toList(),
                     ),
                   ),
@@ -652,8 +649,7 @@ return PieChartSectionData(
                 ),
                 SizedBox(height: 5.h),
                 Text(
-                  '${expense.category} • '
-                  '${DateFormat('dd MMM').format(expense.date)}',
+                  '${expense.category} • ${DateFormat('dd MMM').format(expense.date)}',
                   style: TextStyle(
                     color: secondaryText,
                     fontSize: 12,

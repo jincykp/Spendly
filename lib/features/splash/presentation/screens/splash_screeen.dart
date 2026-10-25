@@ -21,7 +21,7 @@ class _SplashPageState extends State<SplashScreen> {
   void initState() {
     super.initState();
 
-    _timer = Timer(const Duration(seconds: 4), () {
+    _timer = Timer(const Duration(seconds: 3), () {
       if (!mounted) return;
       context.go(AppRoutes.dashboard);
     });

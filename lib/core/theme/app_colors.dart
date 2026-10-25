@@ -30,4 +30,18 @@ class AppColors {
   static const Color budgetWarning = Colors.orange;
   static const Color budgetRemainingWarning = Colors.orangeAccent;
 
+  // New Dashboard & Category Colors
+  static const Color expenseSpentIcon = Color(0xFFE57373);
+  static const Color budgetRemainingPositive = Color(0xFF4CAF50);
+
+  
+// Category Breakdown Colors
+  static const Color categoryFood = Color(0xFF4CAF50);
+  static const Color categoryTransport = Color(0xFF2196F3);
+  static const Color categoryEntertainment = Color(0xFFE57373);
+  static const Color categoryBills = Color(0xFFFFA726);
+  static const Color categoryShopping = Color(0xFF9575CD);
+  static const Color categoryHealth = Color(0xFF26A69A);
+  static const Color categoryEducation = Color(0xFF7986CB);
+  static const Color categoryOther = Color(0xFF90A4AE);
 }
