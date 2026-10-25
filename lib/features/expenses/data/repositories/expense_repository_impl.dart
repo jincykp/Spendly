@@ -1,3 +1,4 @@
+import 'package:spendly/core/services/mock_data_seeder.dart';
 import 'package:spendly/features/expenses/data/data_source/expense_local_data_source.dart';
 import 'package:spendly/features/expenses/data/models/expense_model.dart';
 import 'package:spendly/features/expenses/domain/entities/expense.dart';
@@ -16,12 +17,23 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
         .toList();
   }
 
+  // @override
+  // Future<void> saveExpense(Expense expense) async {
+  //   final model = ExpenseModel.fromEntity(expense);
+  //   await _dataSource.saveExpense(model);
+  // }
   @override
   Future<void> saveExpense(Expense expense) async {
+    // A real expense is being saved. If it isn't itself a mock record,
+    // wipe the demo data first.
+    if (!MockDataSeeder.isMockId(expense.id) &&
+        MockDataSeeder.hasMockExpenses()) {
+      await MockDataSeeder.clearMockExpenses();
+    }
+
     final model = ExpenseModel.fromEntity(expense);
     await _dataSource.saveExpense(model);
   }
-
   @override
   Future<void> deleteExpense(String id) async {
     await _dataSource.deleteExpense(id);

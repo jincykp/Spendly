@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_ce/hive.dart';
+import 'package:spendly/core/services/mock_data_seeder.dart';
 import 'package:spendly/core/utils/budget_allocation.dart';
 import '../models/budget_model.dart';
 
@@ -36,6 +37,7 @@ class BudgetLocalDataSource {
   }
 
   Future<void> saveBudget(BudgetModel budget) async {
+
     await _box.put(_keyFor(budget), budget);
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
+import 'package:spendly/core/services/mock_data_seeder.dart';
 import 'package:spendly/features/expenses/data/data_source/expense_local_data_source.dart';
 
 import 'package:spendly/features/expenses/data/models/expense_model.dart';
@@ -55,9 +56,12 @@ class ExpensesNotifier extends Notifier<List<Expense>> {
   }
 
   Future<void> saveExpense(Expense expense) async {
-    await ref.read(saveExpenseUseCaseProvider).call(expense);
+    final isRealExpense = !MockDataSeeder.isMockId(expense.id);
 
+    await ref.read(saveExpenseUseCaseProvider).call(expense);
     state = ref.read(getAllExpensesUseCaseProvider).call();
+
+   
   }
 
   Future<void> deleteExpense(String id) async {
